@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thăng Long Water Puppet Theatre - Global Audio Guide</title>
+    <style>
+        :root {
+            --royal-red: #d32f2f;
+            --gold: #efbf04;
+            --cream: #fff9eb;
+            --deep-water: #0a0a0a;
+        }
+
+        body {
+            margin: 0; background-color: #000; color: #fff;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh; overflow: hidden;
+        }
+
+        .app-container {
+            width: 100%; max-width: 650px; height: 100%; margin: auto;
+            background: linear-gradient(180deg, #220000 0%, #000 100%);
+            position: relative; display: flex; flex-direction: column;
+            border-left: 1px solid #333; border-right: 1px solid #333;
+        }
+
+        .overlay {
+            position: absolute; inset: 0; z-index: 9999;
+            background: radial-gradient(circle, var(--royal-red) 0%, #000 100%);
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; padding: 40px;
+        }
+
+        #sync-screen { display: none; background: rgba(0,0,0,0.95); z-index: 10000; }
+
+        .dragon-logo {
+            font-size: 80px; margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px var(--gold));
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .progress-container { width: 250px; height: 6px; background: #333; border-radius: 10px; margin: 20px 0; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--gold); transition: width 0.3s; }
+
+        header { padding: 20px; text-align: center; background: #000; border-bottom: 2px solid var(--gold); }
+        header h1 { color: var(--gold); margin: 0; font-size: 1.2rem; letter-spacing: 4px; }
+
+        .viewport { flex: 1; overflow-y: auto; padding: 20px; position: relative; }
+        .viewport::-webkit-scrollbar { width: 5px; }
+        .viewport::-webkit-scrollbar-thumb { background: var(--gold); }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* THE ORIGINAL 10-FACT IMAGE-ON-RIGHT LAYOUT */
+        .fact-card {
+            background: rgba(255,255,255,0.05); border-radius: 12px;
+            padding: 15px; margin-bottom: 15px; border-left: 4px solid var(--gold);
+            display: flex; align-items: center; justify-content: space-between; gap: 15px;
+        }
+        .fact-content { flex: 1; }
+        .fact-content h4 { color: var(--gold); margin: 0 0 5px 0; font-size: 0.9rem; text-transform: uppercase; }
+        .fact-content p { margin: 0; font-size: 0.85rem; line-height: 1.5; color: var(--cream); }
+        .fact-img { width: 90px; height: 90px; border-radius: 8px; object-fit: cover; background: #222; flex-shrink: 0; border: 1px solid #444; }
+
+        #script-feed { padding-bottom: 350px; }
+        .line { font-size: 1.35rem; margin-bottom: 60px; opacity: 0.2; transition: all 0.6s ease; text-align: center; }
+        .line.active { opacity: 1; color: var(--gold); transform: scale(1.05); font-weight: bold; }
+        .stage-note { font-style: italic; color: #5bc0de; margin-bottom: 40px; text-align: center; opacity: 0.5	; font-size: 0.95rem; }
+        .stage-note.active { opacity: 1; }
+
+        .nav-bar { height: 80px; background: #111; display: flex; border-top: 1px solid #333; }
+        .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; cursor: pointer; transition: 0.3s; }
+        .nav-btn.active { color: var(--gold); background: #1a1a1a; }
+        .nav-icon { font-size: 24px; margin-bottom: 5px; }
+        .nav-text { font-size: 10px; font-weight: bold; text-transform: uppercase; }
+
+        select, button { padding: 15px; width: 100%; border-radius: 8px; border: none; margin-top: 10px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        .primary-btn { background: var(--gold); color: #000; text-transform: uppercase; transition: 0.2s; }
+        .primary-btn:hover { background: #ffcc22; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div id="splash" class="overlay">
+            <div class="dragon-logo">🐲</div>
+            <h1 style="color: var(--gold); margin-bottom: 40px; letter-spacing: 5px;">WELCOME TO NHÀ HÁT NGHỆ THUẬT PHƯƠNG NAM</h1>
+            <select id="lang-picker">
+                <option value="en">English</option>
+                <option value="vn">Tiếng Việt</option>
+                <option value="zh">中文 (简体)</option>
+                <option value="fr">Français</option>
+                <option value="es">Español</option>
+                <option value="de">Deutsch</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="it">Italiano</option>
+                <option value="ru">Русский</option>
+            </select>
+            <button class="primary-btn" onclick="enterApp()">Explore Theatre</button>
+        </div>
+
+        <div id="sync-screen" class="overlay">
+            <div class="dragon-logo" style="font-size: 50px;">🐲</div>
+            <h2 id="sync-label" style="color: var(--gold);">CONNECTING...</h2>
+            <div class="progress-container"><div id="sync-progress" class="progress-bar"></div></div>
+            <p id="sync-status" style="font-size: 0.8rem; opacity: 0.7;">Calibrating with live acoustic signals...</p>
+        </div>
+
+        <header><h1 id="app-title">THĂNG LONG</h1></header>
+
+        <div class="viewport" id="scroll-area">
+            <div id="home-page" class="page active"><div id="facts-container"></div></div>
+            <div id="trans-page" class="page">
+                <div id="trans-init" style="text-align: center; padding-top: 50px;">
+                    <div class="dragon-logo" style="font-size: 40px;">🎭</div>
+                    <h3 id="ready-msg" style="color: var(--gold);">Performance Sync</h3>
+                    <p style="opacity: 0.8; font-size: 0.9rem; padding: 0 30px;">Sync when the music begins to align the script with the stage.</p>
+                    <button class="primary-btn" onclick="performSync()">Sync with Stage</button>
+                </div>
+                <div id="live-content" style="display: none;"><div id="script-feed"></div></div>
+            </div>
+        </div>
+
+        <nav class="nav-bar">
+            <div class="nav-btn active" id="nav-home" onclick="changeTab('home')"><span class="nav-icon">🏠</span><span class="nav-text" id="label-home">Home</span></div>
+            <div class="nav-btn" id="nav-trans" onclick="changeTab('trans')"><span class="nav-icon">🎧</span><span class="nav-text" id="label-live">Live Script</span></div>
+        </nav>
+    </div>
+
+    <script>
+        let currentLang = 'en';
+        const factImgs = [
+            "https://images.openai.com/static-rsc-4/hlPFD8HzLVuWMyZyAGNDcdo3wIeJFlVdU4ZJkrgwQA4hosdNRyRPlFkeYQ5tHIJlAyqQggTAqbc8DHhNFFp6Adr3GUIatR3JRn4KlVe2pFtYmHcm7iXE3foqKzrHFHIeFTcvd-Ux2C4qJ-TjoM3D1WmMfUK0rwPZKy-fO6QgWkCiOdO3XE_-VH_ZyiqitgYi?purpose=inline",
+            "https://images.openai.com/static-rsc-4/qS2-UPhSDiAdOt5MGTfaHpJVqPDKnzzkSSuforJDk6ay4kTc-ufeq3Xu9sbwdJt6FP2S6FWuqDwpI_Kz0wsjyRhBoTOvbnOtXO6psMYjMWWx3IxPgOdysdHJFG9xcg-bp-VWrE-6smuOl68cVNDnCodxO-tScXmmHghplj4dGGc?purpose=inline",
+            "https://images.openai.com/static-rsc-4/_b45lmkwRNdqnNcOtJpnwD4vVHbE74Y4n5kc8RhvElgoKxMRNwVSa_7ChQl96AyFXEqlvbD39lugppe0vbwLyDOiLrtDSxWSrKieVuwZx4tUtYI51qhoZJiV5lPpQNVuJUOP4p-NNxFhuodFs-OOmo0ZsDPlT4Vqbo9IPEfEUEtGFhXtLRfla7g8q3iyfTkW?purpose=inline",
+            "https://images.openai.com/static-rsc-4/hy7dLpOFwhCVr7poi3yEohu7URel8iPDQX8ccP9wGBpM02Mi7RfcnFQiesPTwdJe3MHNiEGgNkoup68cQpIn05kmxc7Mwv1jCc0VIkpqZyKOS9E_ZHian5wavyYYv7I3Crj4jfb1GgYQu-D4Esh1sRAYs8IM2ekzv2mvjUxNzH0?purpose=inline",
+            "https://images.openai.com/static-rsc-4/E-oFRnVBLvbH9WoLhTxMkLfe9Ut9bc2V_fmstXywDK2xvkubtrUgjlaRoOML09J3SenFjB4FEK5V7IUeRFcmTzcwloTiM-XsM-qvAWMcYDMjqcH3u-B-hpJtBQa1YOMsKHq9evKPWbqFW8df-P91YLQJAerYoMwkB2Km4CLZzQ4?purpose=inline",
+            "https://images.openai.com/static-rsc-4/QXC3Zltuu-M_JRZ-_4UodjQ0g_r-tr2c_RkGco-8KdJMl3B5OG44odjEU98InBMNTaAtswZPFxdmh8wZ9bOan_OMFOtuIg8CqGJ-sU4vsx-LEDdJSGTpiy_YrCjrvAz6iKeZs5m6E7SfqjpDXlu4zBLt-wV1MfjvJluU1-3CRUU?purpose=inline",
+            "https://imagevietnam.vnanet.vn//MediaUpload/Org/2023/03/23/423-9-44-35.jpg",
+            "https://images.openai.com/static-rsc-4/78rNJrmX1q_6xj6gM2Crp04lHRmst9iOuCUBqvi8qlhlj5Wt234au3LAWVojOZekp9AyKgvIps6SJNISPcWswl4KrK9-m91AoDHYXWHUkNFpb8BtlvgySxKe8cPgSaEPLjdUBUCSWPCLRmub7h2syH60MSFnvXbEeZ3hZXV5Yvg?purpose=inline",
+            "https://images.openai.com/static-rsc-4/HyOvouac9L9Ir87LqQoD9KDNCnednT5jrRkjEPnWBRvDFzYXbnnuuech2wt-h4_T6mg9caPOjkz_r8mNzpdScKpjlYmF7V520fJwsMGZBlrTogxeMZRyvpIW_vpPY5Wq6ghqj-dyBQl7-gb0BsqM9voEe-SfeL6IrPomEkvDqX0?purpose=inline",
+            "https://images.openai.com/static-rsc-4/bRipU-SCSpLoh1rkey7qbuteMv6PZZdpTmnK4-HwFD8pgTL3rarefEVLhcVoL0WqlZugWg1N7gVUxeQObCmmK1K5TDFMOqX7KR8IGUQPAp6PUnCmhhPsZApIksioiBRwIPBEN-RtTYdIk1LvovDaegRxVI2Xtxf9gw7QDMkNGjs?purpose=inline"
+        ];
+
+        const langData = {
+            en: {
+                home: "HOME", live: "LIVE SCRIPT", sync: "SYNCING...", title: "THĂNG LONG AUDIO",
+                facts: [
+                    {t: "1. Fig Wood", d: "Material for water puppets because it is lightweight and resists water damage"},
+                    {t: "2. Water Stage", d: "Performance area designed as a shallow pool where puppets appear to glide on water"},
+                    {t: "3. Hidden Mechanisms", d: "Long rods and strings are used behind the screen to control puppet movements"},
+                    {t: "4. Bamboo Screen", d: "Curtain that hides puppeteers while creating a mysterious effect for the audience"},
+                    {t: "5. Traditional Music", d: "Live music with drums and string instruments enhances the storytelling"},
+                    {t: "6. Folklore Stories", d: "Performances often tell village legends, daily life, and historical tales"},
+                    {t: "7. Hand-Carved Puppets", d: "Each puppet is carefully carved and painted by skilled artisans"},
+                    {t: "8. Lacquer Finish", d: "Puppets are coated with layers of lacquer to protect them and give a glossy appearance"},
+                    {t: "9. Group Performance", d: "Multiple puppeteers work together in coordination behind the stage"},
+                    {t: "10. Cultural Heritage", d: "A traditional art form passed down through generations in Vietnam"}
+                ],
+                script: [
+                    {t:0, s:"[Music rises: drums and strings echo across the water]"},
+                    {t:6, m:"Welcome. This art was born in the flooded rice fields of northern Vietnam."},
+                    {t:14, m:"For generations, villagers stood in water like this, bringing stories to life."},
+                    {t:22, m:"Here comes Uncle Teu, the cheerful storyteller."},
+                    {t:28, m:"Uncle Teu: Welcome, my friends. Watch closely—the water is full of surprises."},
+                    {t:42, m:"A village festival begins. Flags rise, music plays, and spirits are welcomed."},
+                    {t:60, m:"Dragons emerge from the water, symbols of power, rain, and life."},
+                    {t:88, m:"In the countryside, farmers and buffalo prepare the fields."},
+                    {t:110, m:"Life here depends on balance between water, land, and hard work."},
+                    {t:128, m:"Suddenly, a fox appears, chasing the ducks—chaos begins."},
+                    {t:148, m:"The villagers act quickly to protect their animals."},
+                    {t:166, m:"A legend unfolds: a king returns a sacred sword to a golden turtle."},
+                    {t:188, m:"Peace returns to the land."},
+                    {t:206, m:"The water fills with mythical creatures in celebration."},
+                    {t:236, m:"These stories have lived for generations. Thank you for being here."}
+]
+            },
+            vn: {
+                home: "TRANG CHỦ", live: "BẢN DỊCH", sync: "ĐANG ĐỒNG BỘ...", title: "MÚA RỐI NƯỚC",
+                facts: [
+                    {t:"1. Gỗ Sung", d:"Vật liệu làm rối vì nhẹ và chịu nước tốt"},
+                    {t:"2. Sân Khấu Nước", d:"Hồ nước nông nơi rối di chuyển trên mặt nước"},
+                    {t:"3. Cơ Chế Ẩn", d:"Thanh và dây được dùng để điều khiển rối phía sau"},
+                    {t:"4. Màn Tre", d:"Che nghệ nhân và tạo hiệu ứng huyền bí"},
+                    {t:"5. Âm Nhạc Truyền Thống", d:"Âm nhạc trực tiếp làm tăng cảm xúc câu chuyện"},
+                    {t:"6. Truyện Dân Gian", d:"Kể về đời sống và truyền thuyết"},
+                    {t:"7. Rối Chạm Khắc", d:"Được làm thủ công bởi nghệ nhân"},
+                    {t:"8. Sơn Phủ", d:"Lớp sơn bảo vệ và tạo độ bóng"},
+                    {t:"9. Diễn Dưới Nước", d:"Nghệ nhân đứng dưới nước điều khiển rối"},
+                    {t:"10. Di Sản Văn Hóa", d:"Nghệ thuật truyền thống qua nhiều thế hệ"}
+],
+                script: [
+                    {t:0, s:"[Âm nhạc vang lên: trống và đàn ngân trên mặt nước]"},
+                    {t:6, m:"Chào mừng quý vị. Nghệ thuật này ra đời từ những cánh đồng lúa ngập nước miền Bắc Việt Nam."},
+                    {t:14, m:"Qua nhiều thế hệ, người dân đứng dưới nước để kể lại những câu chuyện."},
+                    {t:22, m:"Kìa, chú Tễu xuất hiện — người kể chuyện vui nhộn."},
+                    {t:28, m:"Chú Tễu: Xin chào! Hãy chú ý, mặt nước này đầy bất ngờ."},
+                    {t:42, m:"Lễ hội làng bắt đầu. Cờ bay, nhạc vang, đón chào thần linh."},
+                    {t:60, m:"Rồng xuất hiện từ mặt nước — biểu tượng của sức mạnh và sự sống."},
+                    {t:88, m:"Ở đồng quê, người nông dân và trâu bắt đầu làm ruộng."},
+                    {t:110, m:"Cuộc sống phụ thuộc vào sự cân bằng giữa nước, đất và lao động."},
+                    {t:128, m:"Bỗng nhiên, cáo xuất hiện, đuổi bắt đàn vịt."},
+                    {t:148, m:"Người dân nhanh chóng bảo vệ vật nuôi."},
+                    {t:166, m:"Một truyền thuyết: nhà vua trả gươm thần cho rùa vàng."},
+                    {t:188, m:"Hòa bình trở lại."},
+                    {t:206, m:"Các linh vật hội tụ trong màn kết rực rỡ."},
+                    {t:236, m:"Những câu chuyện này được truyền qua nhiều thế hệ. Xin cảm ơn."}
+]
+            },
+            zh: {
+                home: "首页", live: "同步剧本", sync: "同步中...", title: "升龙水上木偶",
+                facts: [
+                    {t:"1. 无花果木", d:"轻便且防水的木偶材料"},
+                    {t:"2. 水上舞台", d:"浅水表演区让木偶滑动"},
+                    {t:"3. 隐藏机制", d:"通过杆和绳控制木偶"},
+                    {t:"4. 竹帘", d:"遮挡表演者并营造神秘感"},
+                    {t:"5. 传统音乐", d:"现场音乐增强表现力"},
+                    {t:"6. 民间故事", d:"讲述生活与传说"},
+                    {t:"7. 手工木偶", d:"由工匠手工制作"},
+                    {t:"8. 漆面涂层", d:"保护并增加光泽"},
+                    {t:"9. 水中表演", d:"表演者站在水中操控"},
+                    {t:"10. 文化遗产", d:"世代相传的艺术"}
+],
+                script: [
+                    {t:0, s:"[音乐响起：鼓声与弦乐在水面回荡]"},
+                    {t:6, m:"欢迎大家。这门艺术起源于越南北部的水田之中。"},
+                    {t:14, m:"世世代代，人们站在水中讲述故事。"},
+                    {t:22, m:"看！逗趣的主持人登场了。"},
+                    {t:28, m:"主持人：欢迎大家，请仔细观看，水中充满惊喜。"},
+                    {t:42, m:"村庄的节日开始，旗帜升起，音乐响起。"},
+                    {t:60, m:"龙从水中出现，象征力量与生命。"},
+                    {t:88, m:"在乡村，农民与水牛开始耕作。"},
+                    {t:110, m:"生活依赖于水、土地与努力的平衡。"},
+                    {t:128, m:"突然，一只狐狸出现，追赶鸭群。"},
+                    {t:148, m:"村民迅速保护家禽。"},
+                    {t:166, m:"传说中，国王将宝剑归还给金龟。"},
+                    {t:188, m:"和平再次降临。"},
+                    {t:206, m:"神兽齐聚，庆祝这一刻。"},
+                    {t:236, m:"这些故事代代相传。感谢您的观看。"}
+]
+            },
+            fr: {
+                home: "ACCUEIL", live: "DIRECT", sync: "SYNCHRO...", title: "MARIONNETTES",
+                facts: [
+                    {t:"1. Bois de Figuier", d:"Matériau léger et résistant à l’eau"},
+                    {t:"2. Scène d’Eau", d:"Bassin peu profond pour les marionnettes"},
+                    {t:"3. Mécanismes Cachés", d:"Tiges et fils contrôlent les mouvements"},
+                    {t:"4. Rideau de Bambou", d:"Cache les artistes et crée du mystère"},
+                    {t:"5. Musique Traditionnelle", d:"Musique live qui enrichit l’histoire"},
+                    {t:"6. Histoires Folkloriques", d:"Récits de vie et légendes"},
+                    {t:"7. Marionnettes Sculptées", d:"Fabriquées à la main"},
+                    {t:"8. Finition Laquée", d:"Protège et donne de la brillance"},
+                    {t:"9. Performance dans l’Eau", d:"Les artistes jouent dans l’eau"},
+                    {t:"10. Patrimoine Culturel", d:"Art transmis entre générations"}
+],
+                script: [
+                    {t:0, s:"[La musique s’élève : tambours et cordes résonnent]"},
+                    {t:6, m:"Bienvenue. Cet art est né dans les rizières inondées du nord du Vietnam."},
+                    {t:14, m:"Depuis des générations, les villageois racontent leurs histoires dans l’eau."},
+                    {t:22, m:"Voici l’oncle Teu, le conteur joyeux."},
+                    {t:28, m:"Oncle Teu : Bienvenue, regardez bien, l’eau réserve des surprises."},
+                    {t:42, m:"La fête du village commence."},
+                    {t:60, m:"Les dragons apparaissent, symboles de puissance et de vie."},
+                    {t:88, m:"Les agriculteurs travaillent avec leurs buffles."},
+                    {t:110, m:"La vie dépend de l’équilibre entre l’eau et la terre."},
+                    {t:128, m:"Un renard surgit et poursuit les canards."},
+                    {t:148, m:"Les villageois protègent leurs animaux."},
+                    {t:166, m:"Une légende : une épée sacrée rendue à une tortue d’or."},
+                    {t:188, m:"La paix revient."},
+                    {t:206, m:"Les créatures mythiques célèbrent ensemble."},
+                    {t:236, m:"Merci d’avoir partagé ce moment."}
+]
+            },
+            es: {
+                home: "INICIO", live: "GUIÓN", sync: "SINCRO...", title: "MARIONETAS",
+                facts: [
+                    {t:"1. Madera de Higuera", d:"Material ligero y resistente al agua"},
+                    {t:"2. Escenario de Agua", d:"Piscina poco profunda para marionetas"},
+                    {t:"3. Mecanismos Ocultos", d:"Control con varillas y cuerdas"},
+                    {t:"4. Pantalla de Bambú", d:"Oculta a los artistas"},
+                    {t:"5. Música Tradicional", d:"Música en vivo mejora la historia"},
+                    {t:"6. Historias Folclóricas", d:"Relatos de vida y tradición"},
+                    {t:"7. Marionetas Talladas", d:"Hechas a mano"},
+                    {t:"8. Acabado Lacado", d:"Protege y da brillo"},
+                    {t:"9. Actuación en el Agua", d:"Artistas actúan en el agua"},
+                    {t:"10. Patrimonio Cultural", d:"Tradición transmitida"}
+],
+                script: [
+                    {t:0, s:"[La música comienza: tambores y cuerdas]"},
+                    {t:6, m:"Bienvenidos. Este arte nació en los arrozales inundados del norte de Vietnam."},
+                    {t:14, m:"Durante generaciones, la gente cuenta historias en el agua."},
+                    {t:22, m:"Aquí llega el tío Teu."},
+                    {t:28, m:"Teu: Bienvenidos, el agua guarda muchas sorpresas."},
+                    {t:42, m:"Comienza el festival del pueblo."},
+                    {t:60, m:"Los dragones emergen del agua."},
+                    {t:88, m:"Los agricultores trabajan con sus búfalos."},
+                    {t:110, m:"La vida depende del equilibrio entre agua y tierra."},
+                    {t:128, m:"Un zorro aparece persiguiendo patos."},
+                    {t:148, m:"Los aldeanos protegen a sus animales."},
+                    {t:166, m:"Una leyenda: una espada devuelta a una tortuga dorada."},
+                    {t:188, m:"La paz regresa."},
+                    {t:206, m:"Las criaturas celebran."},
+                    {t:236, m:"Gracias por acompañarnos."}
+]
+            },
+            de: {
+                home: "START", live: "SKRIPT", sync: "SYNC...", title: "WASSERPUPPEN",
+                facts: [
+                    {t:"1. Feigenholz", d:"Leichtes und wasserfestes Material"},
+                    {t:"2. Wasserbühne", d:"Flaches Becken für Figuren"},
+                    {t:"3. Versteckte Mechanik", d:"Steuerung mit Stäben und Schnüren"},
+                    {t:"4. Bambusvorhang", d:"Verbirgt die Spieler"},
+                    {t:"5. Traditionelle Musik", d:"Live-Musik unterstützt die Geschichte"},
+                    {t:"6. Volksgeschichten", d:"Geschichten aus dem Dorfleben"},
+                    {t:"7. Handgeschnitzte Figuren", d:"Von Hand gefertigt"},
+                    {t:"8. Lackierung", d:"Schützt und glänzt"},
+                    {t:"9. Aufführung im Wasser", d:"Spieler stehen im Wasser"},
+                    {t:"10. Kulturerbe", d:"Über Generationen weitergegeben"}
+],
+                script: [
+                    {t:0, s:"[Musik erklingt: Trommeln und Saiten]"},
+                    {t:6, m:"Willkommen. Diese Kunst entstand in den Reisfeldern Nordvietnams."},
+                    {t:14, m:"Seit Generationen erzählen Menschen Geschichten im Wasser."},
+                    {t:22, m:"Hier kommt Onkel Teu."},
+                    {t:28, m:"Teu: Willkommen, passt gut auf."},
+                    {t:42, m:"Ein Dorffest beginnt."},
+                    {t:60, m:"Drachen erscheinen aus dem Wasser."},
+                    {t:88, m:"Bauern arbeiten mit ihren Büffeln."},
+                    {t:110, m:"Das Leben basiert auf Gleichgewicht."},
+                    {t:128, m:"Ein Fuchs jagt Enten."},
+                    {t:148, m:"Die Dorfbewohner schützen ihre Tiere."},
+                    {t:166, m:"Eine Legende entfaltet sich."},
+                    {t:188, m:"Frieden kehrt zurück."},
+                    {t:206, m:"Mythische Wesen feiern."},
+                    {t:236, m:"Vielen Dank."}
+]
+            },
+            ja: {
+                home: "ホーム", live: "台本", sync: "同期中...", title: "水上人形劇",
+                facts: [
+                    {t:"1. イチジクの木", d:"軽くて水に強い素材"},
+                    {t:"2. 水上舞台", d:"浅い水で人形が動く"},
+                    {t:"3. 隠された仕組み", d:"棒と糸で操作"},
+                    {t:"4. 竹の幕", d:"操作者を隠す"},
+                    {t:"5. 伝統音楽", d:"音楽が雰囲気を作る"},
+                    {t:"6. 民話", d:"生活や伝説の物語"},
+                    {t:"7. 手彫り人形", d:"職人が制作"},
+                    {t:"8. 漆仕上げ", d:"保護と光沢"},
+                    {t:"9. 水中での演技", d:"水の中で操作"},
+                    {t:"10. 文化遺産", d:"伝統的な芸術"}
+],
+                script: [
+                    {t:0, s:"[音楽が響く：太鼓と弦楽器]"},
+                    {t:6, m:"ようこそ。この芸術は北ベトナムの水田から生まれました。"},
+                    {t:14, m:"人々は水の中で物語を語り継いできました。"},
+                    {t:22, m:"チュウ・テウが登場します。"},
+                    {t:28, m:"テウ：ようこそ、水の中には驚きがあります。"},
+                    {t:42, m:"村の祭りが始まります。"},
+                    {t:60, m:"龍が水から現れます。"},
+                    {t:88, m:"農民が水牛と働きます。"},
+                    {t:110, m:"生活はバランスに依存します。"},
+                    {t:128, m:"キツネがアヒルを追います。"},
+                    {t:148, m:"村人が守ります。"},
+                    {t:166, m:"伝説が展開します。"},
+                    {t:188, m:"平和が戻ります。"},
+                    {t:206, m:"祝宴が始まります。"},
+                    {t:236, m:"ありがとうございました。"}
+]
+            },
+            ko: {
+                home: "홈", live: "대본", sync: "동기화 중...", title: "수상 인형극",
+                facts: [
+                    {t:"1. 무화과 나무", d:"가볍고 물에 강함"},
+                    {t:"2. 수중 무대", d:"얕은 물 위 무대"},
+                    {t:"3. 숨겨진 장치", d:"막대와 줄로 조작"},
+                    {t:"4. 대나무 스크린", d:"조종자를 숨김"},
+                    {t:"5. 전통 음악", d:"라이브 음악 사용"},
+                    {t:"6. 민속 이야기", d:"생활과 전설 이야기"},
+                    {t:"7. 수공예 인형", d:"장인이 제작"},
+                    {t:"8. 옻칠 마감", d:"보호 및 광택"},
+                    {t:"9. 물속 공연", d:"물속에서 조작"},
+                    {t:"10. 문화 유산", d:"전통 예술"}
+],
+                script: [
+                    {t:0, s:"[음악 시작: 북과 현악기]"},
+                    {t:6, m:"환영합니다. 이 예술은 베트남 북부 논에서 시작되었습니다."},
+                    {t:14, m:"사람들은 물속에서 이야기를 전해왔습니다."},
+                    {t:22, m:"떼우 아저씨가 등장합니다."},
+                    {t:28, m:"어서 오세요. 물속에는 많은 놀라움이 있습니다."},
+                    {t:42, m:"마을 축제가 시작됩니다."},
+                    {t:60, m:"용이 나타납니다."},
+                    {t:88, m:"농부들이 물소와 일합니다."},
+                    {t:110, m:"삶은 균형에 달려 있습니다."},
+                    {t:128, m:"여우가 오리를 쫓습니다."},
+                    {t:148, m:"사람들이 지켜냅니다."},
+                    {t:166, m:"전설이 펼쳐집니다."},
+                    {t:188, m:"평화가 돌아옵니다."},
+                    {t:206, m:"축제가 이어집니다."},
+                    {t:236, m:"감사합니다."}
+]
+            },
+            it: {
+                home: "HOME", live: "COPIONE", sync: "SYNC...", title: "MARIONNETTE",
+                facts: [
+                    {t:"1. Legno di Fico", d:"Materiale leggero e resistente"},
+                    {t:"2. Palco sull’Acqua", d:"Vasca poco profonda"},
+                    {t:"3. Meccanismi Nascosti", d:"Controllo con aste e fili"},
+                    {t:"4. Schermo di Bambù", d:"Nasconde gli artisti"},
+                    {t:"5. Musica Tradizionale", d:"Musica dal vivo"},
+                    {t:"6. Storie Tradizionali", d:"Racconti popolari"},
+                    {t:"7. Marionette Intagliate", d:"Fatte a mano"},
+                    {t:"8. Finitura Laccata", d:"Protegge e lucida"},
+                    {t:"9. Performance nell’Acqua", d:"Artisti nell’acqua"},
+                    {t:"10. Patrimonio Culturale", d:"Arte tramandata"}
+],
+                script: [
+                    {t:0, s:"[Musica: tamburi e corde]"},
+                    {t:6, m:"Benvenuti. Quest’arte nasce nelle risaie del Vietnam del nord."},
+                    {t:14, m:"Le storie vengono raccontate nell’acqua da generazioni."},
+                    {t:22, m:"Arriva lo zio Teu."},
+                    {t:28, m:"Benvenuti, osservate attentamente."},
+                    {t:42, m:"Inizia la festa del villaggio."},
+                    {t:60, m:"I draghi emergono."},
+                    {t:88, m:"I contadini lavorano."},
+                    {t:110, m:"La vita è equilibrio."},
+                    {t:128, m:"Una volpe attacca."},
+                    {t:148, m:"Il villaggio reagisce."},
+                    {t:166, m:"Una leggenda prende vita."},
+                    {t:188, m:"Torna la pace."},
+                    {t:206, m:"Celebrazione finale."},
+                    {t:236, m:"Grazie."}
+]
+            },
+            ru: {
+                home: "ГЛАВНАЯ", live: "СЦЕНАРИЙ", sync: "СИНХРО...", title: "ТХАНГ ЛОНГ",
+                facts: [
+                    {t:"1. Дерево инжира", d:"Лёгкий и водостойкий материал"},
+                    {t:"2. Водная сцена", d:"Неглубокий бассейн для кукол"},
+                    {t:"3. Скрытые механизмы", d:"Управление с помощью стержней"},
+                    {t:"4. Бамбуковая ширма", d:"Скрывает артистов"},
+                    {t:"5. Традиционная музыка", d:"Живая музыка сопровождает шоу"},
+                    {t:"6. Народные истории", d:"Истории и легенды"},
+                    {t:"7. Ручная резьба", d:"Сделано вручную"},
+                    {t:"8. Лаковое покрытие", d:"Защищает и блестит"},
+                    {t:"9. Выступление в воде", d:"Артисты в воде"},
+                    {t:"10. Культурное наследие", d:"Передаётся поколениям"}
+],
+                script: [
+                    {t:0, s:"[Музыка: барабаны и струны]"},
+                    {t:6, m:"Добро пожаловать. Это искусство родилось на рисовых полях Вьетнама."},
+                    {t:14, m:"Люди передают истории через поколения."},
+                    {t:22, m:"Появляется дядя Тэу."},
+                    {t:28, m:"Добро пожаловать, смотрите внимательно."},
+                    {t:42, m:"Начинается праздник."},
+                    {t:60, m:"Появляются драконы."},
+                    {t:88, m:"Фермеры работают."},
+                    {t:110, m:"Жизнь — это баланс."},
+                    {t:128, m:"Лиса гонится за утками."},
+                    {t:148, m:"Жители защищаются."},
+                    {t:166, m:"Легенда разворачивается."},
+                    {t:188, m:"Мир возвращается."},
+                    {t:206, m:"Финальное празднование."},
+                    {t:236, m:"Спасибо."}
+]
+            }
+        };
+
+        function enterApp() {
+            currentLang = document.getElementById('lang-picker').value;
+            applyLanguage();
+            document.getElementById('splash').style.display = 'none';
+        }
+
+        function applyLanguage() {
+            const data = langData[currentLang] || langData.en;
+            document.getElementById('app-title').innerText = data.title;
+            document.getElementById('label-home').innerText = data.home;
+            document.getElementById('label-live').innerText = data.live;
+            
+            const container = document.getElementById('facts-container');
+            container.innerHTML = '';
+            
+            data.facts.forEach((f, i) => {
+                container.innerHTML += `
+                    <div class="fact-card">
+                        <div class="fact-content">
+                            <h4>${f.t}</h4>
+                            <p>${f.d}</p>
+                        </div>
+                        <img src="${factImgs[i]}" class="fact-img">
+                    </div>`;
+            });
+        }
+
+        function changeTab(tab) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab + '-page').classList.add('active');
+            document.getElementById('nav-' + tab).classList.add('active');
+        }
+
+        function performSync() {
+            const syncScreen = document.getElementById('sync-screen');
+            const bar = document.getElementById('sync-progress');
+            const label = document.getElementById('sync-label');
+            syncScreen.style.display = 'flex';
+            label.innerText = langData[currentLang].sync;
+            
+            let progress = 0;
+            const iv = setInterval(() => {
+                progress += 5;
+                bar.style.width = progress + '%';
+                if (progress >= 100) {
+                    clearInterval(iv);
+                    setTimeout(() => {
+                        syncScreen.style.display = 'none';
+                        startLiveFeed();
+                    }, 400);
+                }
+            }, 100);
+        }
+
+        function startLiveFeed() {
+            document.getElementById('trans-init').style.display = 'none';
+            document.getElementById('live-content').style.display = 'block';
+            const feed = document.getElementById('script-feed');
+            feed.innerHTML = '';
+            const script = langData[currentLang]?.script || langData.en.script;
+            
+            script.forEach((item, index) => {
+                const el = document.createElement('div');
+                el.id = 'line-' + index;
+                el.className = item.s ? 'stage-note' : 'line';
+                el.innerText = item.s || item.m;
+                feed.appendChild(el);
+            });
+
+            let startTime = Date.now();
+            setInterval(() => {
+                let elapsed = (Date.now() - startTime) / 1000;
+                script.forEach((item, index) => {
+                    if (elapsed >= item.t) {
+                        const lineEl = document.getElementById('line-' + index);
+                        if (lineEl && !lineEl.classList.contains('active')) {
+                            document.querySelectorAll('.line, .stage-note').forEach(l => l.classList.remove('active'));
+                            lineEl.classList.add('active');
+                            if (item.m) {
+                                let speech = new SpeechSynthesisUtterance(item.m);
+                                if (currentLang === 'zh') speech.lang = 'zh-CN';
+                                else if (currentLang === 'vn') speech.lang = 'vi-VN';
+                                else if (currentLang === 'ja') speech.lang = 'ja-JP';
+                                else if (currentLang === 'ko') speech.lang = 'ko-KR';
+                                else speech.lang = currentLang;
+                                window.speechSynthesis.speak(speech);
+                            }
+                        }
+                    }
+                });
+            }, 500);
+        }
+    </script>
+</body>
+</html>
