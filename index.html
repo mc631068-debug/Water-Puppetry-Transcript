@@ -16,7 +16,6 @@
             margin: 0; background-color: #000; color: #fff;
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             height: 100vh; overflow: hidden;
-	    <audio id="bg-music" src="audio/puppet.mp3" loop></audio>
         }
 
         .app-container {
@@ -477,10 +476,10 @@
             document.getElementById('app-title').innerText = data.title;
             document.getElementById('label-home').innerText = data.home;
             document.getElementById('label-live').innerText = data.live;
-            
+
             const container = document.getElementById('facts-container');
             container.innerHTML = '';
-            
+
             data.facts.forEach((f, i) => {
                 container.innerHTML += `
                     <div class="fact-card">
@@ -501,9 +500,6 @@
         }
 
         function performSync() {
-	    const music = document.getElementById('bg-music');
-		music.volume = 0.3;
-		music.play().catch(() => {});
 	    if (!audioUnlocked) {
    	        const unlock = new SpeechSynthesisUtterance(" ");
    	        window.speechSynthesis.speak(unlock);
@@ -516,7 +512,7 @@
 	    document.querySelector('.nav-bar').style.display = 'none';
             syncScreen.style.display = 'flex';
             label.innerText = langData[currentLang].sync;
-            
+
             let progress = 0;
             const iv = setInterval(() => {
                 progress += 5;
@@ -533,32 +529,12 @@
         }
 
         function startLiveFeed() {
-	    if (item.m && !spoken.has(index)) {
-    	    	spoken.add(index);
-
-   		const music = document.getElementById('bg-music');
-    		music.volume = 0.1;
-
-    		let speech = new SpeechSynthesisUtterance(item.m);
-
-    		if (currentLang === 'zh') speech.lang = 'zh-CN';
-    		else if (currentLang === 'vn') speech.lang = 'vi-VN';
-    		else if (currentLang === 'ja') speech.lang = 'ja-JP';
-    		else if (currentLang === 'ko') speech.lang = 'ko-KR';
-    		else speech.lang = currentLang;
-
-    		speech.onend = () => {
-        		music.volume = 0.3;
-    		};
-
-    window.speechSynthesis.speak(speech);
-}
             document.getElementById('trans-init').style.display = 'none';
             document.getElementById('live-content').style.display = 'block';
             const feed = document.getElementById('script-feed');
             feed.innerHTML = '';
             const script = langData[currentLang]?.script || langData.en.script;
-            
+
             script.forEach((item, index) => {
                 const el = document.createElement('div');
                 el.id = 'line-' + index;
@@ -599,4 +575,5 @@
         }
     </script>
 </body>
+</html>
 </html>
