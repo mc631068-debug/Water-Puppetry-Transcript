@@ -505,7 +505,12 @@
    	        window.speechSynthesis.speak(unlock);
                 window.speechSynthesis.cancel();
   	        audioUnlocked = true;
-}
+	    }
+	    const music = document.getElementById('bg-music');
+	    if (music) {
+    		music.volume = 0.3;
+    		music.play().catch(()=>{});
+	    }
             const syncScreen = document.getElementById('sync-screen');
             const bar = document.getElementById('sync-progress');
             const label = document.getElementById('sync-label');
@@ -522,6 +527,7 @@
                     setTimeout(() => {
                         syncScreen.style.display = 'none';
 			document.querySelector('.nav-bar').style.display = 'flex';
+			changeTab('trans');
                         startLiveFeed();
                     }, 400);
                 }
@@ -529,51 +535,89 @@
         }
 
         function startLiveFeed() {
-            document.getElementById('trans-init').style.display = 'none';
-            document.getElementById('live-content').style.display = 'block';
-            const feed = document.getElementById('script-feed');
-            feed.innerHTML = '';
-            const script = langData[currentLang]?.script || langData.en.script;
+    document.getElementById('trans-init').style.display = 'none';
+    document.getElementById('live-content').style.display = 'block';
 
-            script.forEach((item, index) => {
-                const el = document.createElement('div');
-                el.id = 'line-' + index;
-                el.className = item.s ? 'stage-note' : 'line';
-                el.innerText = item.s || item.m;
-                feed.appendChild(el);
-            });
+    const feed = document.getElementById('script-feed');
+    feed.innerHTML = '';
 
-            let startTime = Date.now();
-            let spoken = new Set();
-            setInterval(() => {
-                let elapsed = (Date.now() - startTime) / 1000;
-                script.forEach((item, index) => {
-                    if (elapsed >= item.t) {
-                        const lineEl = document.getElementById('line-' + index);
-                        if (lineEl && !lineEl.classList.contains('active')) {
-                            document.querySelectorAll('.line, .stage-note').forEach(l => l.classList.remove('active'));
-                            lineEl.classList.add('active');
-                            if (item.m && !spoken.has(index)) {
-                                spoken.add(index);
+    const script = langData[currentLang]?.script || langData.en.script;
 
-                                window.speechSynthesis.cancel();
+    script.forEach((item, index) => {
+        const el = document.createElement('div');
+        el.id = 'line-' + index;
+        el.className = item.s ? 'stage-note' : 'line';
+        el.innerText = item.s || item.m;
+        feed.appendChild(el);
+    });
 
-                                let speech = new SpeechSynthesisUtterance(item.m);
+    const music = document.getElementById('bg-music');
 
-                                if (currentLang === 'zh') speech.lang = 'zh-CN';
-                                else if (currentLang === 'vn') speech.lang = 'vi-VN';
-                                else if (currentLang === 'ja') speech.lang = 'ja-JP';
-                                else if (currentLang === 'ko') speech.lang = 'ko-KR';
-                                else speech.lang = currentLang;
+    let fadeInterval;
 
-                                window.speechSynthesis.speak(speech);
-                            }
-                        }
-                    }
-                });
-            }, 500);
+function fadeTo(target, duration = 300) {
+    if (!music) return;
+
+    clearInterval(fadeInterval);
+
+    const start = music.volume;
+    const change = target - start;
+    const steps = duration / 50;
+    let currentStep = 0;
+
+    fadeInterval = setInterval(() => {
+        currentStep++;
+        music.volume = start + (change * (currentStep / steps));
+
+        if (currentStep >= steps) {
+            music.volume = target;
+            clearInterval(fadeInterval);
         }
+    }, 50);
+}
+
+    let startTime = Date.now();
+    let spoken = new Set();
+
+    setInterval(() => {
+        let elapsed = (Date.now() - startTime) / 1000;
+
+        script.forEach((item, index) => {
+            if (elapsed >= item.t) {
+                const lineEl = document.getElementById('line-' + index);
+
+                if (lineEl && !lineEl.classList.contains('active')) {
+                    document.querySelectorAll('.line, .stage-note').forEach(l => l.classList.remove('active'));
+                    lineEl.classList.add('active');
+
+                    if (item.m && !spoken.has(index)) {
+                        spoken.add(index);
+
+                        window.speechSynthesis.cancel();
+
+                        let speech = new SpeechSynthesisUtterance(item.m);
+
+                        if (currentLang === 'zh') speech.lang = 'zh-CN';
+                        else if (currentLang === 'vn') speech.lang = 'vi-VN';
+                        else if (currentLang === 'ja') speech.lang = 'ja-JP';
+                        else if (currentLang === 'ko') speech.lang = 'ko-KR';
+                        else speech.lang = currentLang;
+
+                        fadeTo(0.08);
+
+			speech.onend = () => {
+    			    fadeTo(0.3); // smooth restore
+			};
+
+                        window.speechSynthesis.speak(speech);
+                    }
+                }
+            }
+        });
+
+    }, 500);
+}
     </script>
+<audio id="bg-music" src="audio/puppet.mp3" loop></audio>
 </body>
-</html>
 </html>
