@@ -160,7 +160,26 @@
         <header><h1 id="app-title">THĂNG LONG</h1></header>
 
         <div class="viewport" id="scroll-area">
-            <div id="home-page" class="page active"><div id="facts-container"></div></div>
+<div id="home-page" class="page active">
+
+    <!-- ✅ HERO IMAGE -->
+    <img src="https://vietnamdiscovery.com/wp-content/uploads/2019/10/hanoi-water-puppet-show.jpg" style="width:100%; border-radius:10px; margin-bottom:15px;">
+
+    <!-- ✅ TITLE TEXT -->
+    <p style="opacity:0.6; font-size:0.8rem; margin-bottom:10px;">
+        Best experienced with sound 🎧
+    </p>
+
+    <!-- ✅ INTRO CARD -->
+    <div class="fact-card">
+        <h4>What is Water Puppetry?</h4>
+        <p>"Artisan" carries the weight of tradition, inheritance, and exquisite manual skill. As water puppetry is a form of cultural heritage, the performers do not merely "act"; they must master the manipulation of complex underwater machinery (often involving "trade secrets" or "generational techniques"). Using this term evokes a sense of deep respect for a craft that requires rigorous discipline and embodies the national identity.</p>
+    </div>
+
+    <!-- ✅ KEEP YOUR EXISTING SYSTEM -->
+    <div id="facts-container"></div>
+
+</div>
             <div id="trans-page" class="page">
                 <div id="trans-init" style="text-align: center; padding-top: 50px;">
                     <div class="dragon-logo" style="font-size: 40px;">🎭</div>
@@ -658,7 +677,7 @@ function fadeTo(target, duration = 300) {
                         else if (currentLang === 'ko') speech.lang = 'ko-KR';
                         else speech.lang = currentLang;
 
-                        fadeTo(0.2);
+                        fadeTo(0.15);
 
 			speech.onend = () => {
     			    fadeTo(0.3); // smooth restore
