@@ -7,6 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thăng Long Water Puppet Theatre - Global Audio Guide</title>
     <style>
+	body {
+    	    overflow-x: hidden;
+	}
+
         :root {
             --royal-red: #d32f2f;
             --gold: #efbf04;
@@ -124,6 +128,17 @@
             opacity: 0.7;
             transform: scale(1);
         }
+	
+	@media (min-width: 768px) {
+    	    .side-menu {
+        	transform: translateX(-85%);
+    	}
+
+    	.side-menu:hover {
+            transform: translateX(0);
+    	}
+    }
+	
 	.menu-btn {
     	    position: absolute;
     	    top: 15px;
@@ -137,18 +152,20 @@
 	.side-menu {
     	    position: fixed;
     	    top: 0;
-    	    left: -280px;
-    	    width: 260px;
-    	    height: 100%;
-    	    background: #111;
-	    padding: 20px;
-    	    transition: 0.3s;
-    	    z-index: 9999;
+    	    left: 0;
+    	    width: 80vw;              /* responsive width */
+    	    max-width: 300px;         /* limit on laptop */
+    	    height: 100vh;
+    	    background: #3a0000;      /* your red tone */
+    	    padding: 20px;
+    	    transform: translateX(-100%);
+    	    transition: transform 0.3s ease;
+    	    z-index: 99999;
     	    overflow-y: auto;
 	}
 
 	.side-menu.active {
-    	    left: 0;
+    	    transform: translateX(0);
 	}
 
 	.menu-section {
@@ -211,27 +228,55 @@
 </head>
 <body>
 
-    	<div id="side-menu" class="side-menu">
-    <h3>More Insights</h3>
+	<!-- SIDE MENU -->
+<div id="side-menu" class="side-menu">
+    <h3>Menu</h3>
 
-    <div class="menu-section">
-        <h4>Jackfruit Wood</h4>
-        <p>Lightweight, water-resistant wood used for puppets.</p>
+    <div class="menu-section" onclick="changeTab('home')">
+        Home
+    </div>
+	<div id="home-page" class="page active">
+    ...
+</div>
+
+<!-- ✅ ADD HERE -->
+<div id="insights-page" class="page">
+    <h2>Insights</h2>
+
+    <div class="fact-card">
+        <img src="your-image1.jpg" class="fact-img">
+        <div>
+            <h4>Jackfruit Wood</h4>
+            <p>Durable, lightweight, water-resistant wood used in puppetry.</p>
+        </div>
     </div>
 
-    <div class="menu-section">
-        <h4>Hidden Artisans</h4>
-        <p>Puppeteers control figures underwater using rods and strings.</p>
+    <div class="fact-card">
+        <img src="your-image2.jpg" class="fact-img">
+        <div>
+            <h4>Hidden Artisans</h4>
+            <p>Puppeteers operate underwater using rods and strings.</p>
+        </div>
     </div>
 
-    <div class="menu-section">
-        <h4>Master Puppeteers</h4>
-        <p>Experts who bring puppets to life.</p>
+    <div class="fact-card">
+        <img src="your-image3.jpg" class="fact-img">
+        <div>
+            <h4>Master Puppeteers</h4>
+            <p>Experts who bring puppets to life.</p>
+        </div>
     </div>
 </div>
+
+    <div class="menu-section" onclick="changeTab('insights')">
+        Insights
+    </div>
+</div>
+
+<!-- OVERLAY -->
 <div id="menu-overlay" class="menu-overlay"></div>
 
-<div class="app-container">
+    <div class="app-container">
 	
     <div class="app-container">
 	<div class="menu-btn" onclick="toggleMenu()">☰</div>
