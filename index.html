@@ -63,7 +63,7 @@
         .fact-img { width: 90px; height: 90px; border-radius: 8px; object-fit: cover; background: #222; flex-shrink: 0; border: 1px solid #444; }
 
         #script-feed { padding-bottom: 350px; }
-        .line { font-size: 1.35rem; margin-bottom: 60px; opacity: 0.2; transition: all 0.6s ease; text-align: center; }
+        .line { font-size: 1.35rem; margin-bottom: 60px; opacity: 0.4; transition: all 0.6s ease; text-align: center; }
         .line.active { opacity: 1; color: var(--gold); transform: scale(1.05); font-weight: bold; }
         .stage-note { font-style: italic; color: #5bc0de; margin-bottom: 40px; text-align: center; opacity: 0.5	; font-size: 0.95rem; }
         .stage-note.active { opacity: 1; }
@@ -237,17 +237,17 @@
                     {t:6, m:"Welcome! How delighted we are to see you attending the show today."},
                     {t:14, m:"I'm going to talk to you for a few minutes about Vietnamese water puppetry."},
                     {t:22, m:"Water puppetry is a folk art performance available in Vietnam only. It's associated with the nature, religion, and social life of Vietnam."},
-                    {t:28, m:"The water surface of rice fields, lakes, and pools is the characteristic of the countryside and an inspiration for the coming of water puppetry."},
-                    {t:42, m:"This art form has the water surface as the stage for performance."},
-                    {t:60, s:"[Tiêu presents the program]"},
-                    {t:88, m:"Next, who is this guy? his name is Tiêu. He is a strong, clever, and courteous man."},
-                    {t:110, m:"He is always smiling and having fun. He is singing the prologue, presenting the items of the program, and complaining on the shortcomings of the villagers."},
-                    {t:128, m:"Trần Nhật Minh. Dragon dance. This is a scene of the dragon dance."},
-                    {t:148, m:"Since ancient times, Vietnamese farmers have adored dragons. The dragon is a legendary creature, a symbol of power."},
-                    {t:166, m:"It often shows up on the village lakes and pools to bring peacetime to the villages. This celestial creature likes dancing, flying and hovering overhead."},
-                    {t:188, m:"Peace returns to the land."},
-                    {t:206, m:"The water fills with mythical creatures in celebration."},
-                    {t:236, m:"These stories have lived for generations. Thank you for being here."}
+                    {t:32, m:"The water surface of rice fields, lakes, and pools is the characteristic of the countryside and an inspiration for the coming of water puppetry."},
+                    {t:46, m:"This art form has the water surface as the stage for performance."},
+                    {t:52, s:"[Tiêu presents the program]"},
+                    {t:56, m:"Next, who is this guy? his name is Tiêu. He is a strong, clever, and courteous man."},
+                    {t:64, m:"He is always smiling and having fun. He is singing the prologue, presenting the items of the program, and complaining on the shortcomings of the villagers."},
+                    {t:72, m:"Trần Nhật Minh. Dragon dance. This is a scene of the dragon dance."},
+                    {t:78, m:"Since ancient times, Vietnamese farmers have adored dragons. The dragon is a legendary creature, a symbol of power."},
+                    {t:89, m:"It often shows up on the village lakes and pools to bring peacetime to the villages. This celestial creature likes dancing, flying and hovering overhead."},
+                    {t:99, m:"Peace returns to the land."},
+                    {t:105, m:"The water fills with mythical creatures in celebration."},
+                    {t:112, m:"These stories have lived for generations. Thank you for being here."}
 ]
             },
             vn: {
@@ -735,6 +735,24 @@ function fadeTo(target, duration = 300) {
     }, 500);
 }
 
+let lastActiveIndex = -1;
+
+function highlightLine(index) {
+    const lines = document.querySelectorAll('#script-feed .line');
+
+    lines.forEach((el, i) => {
+        el.classList.remove('active');
+
+        // keep previous line slightly visible
+        if (i === index) {
+            el.classList.add('active');
+        } else if (i === index - 1) {
+            el.style.opacity = "0.7";
+        } else {
+            el.style.opacity = "0.2";
+        }
+    });
+}
 
 function expandImg(img) {
     const modal = document.getElementById('img-modal');
