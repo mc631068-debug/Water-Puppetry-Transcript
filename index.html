@@ -658,7 +658,7 @@ function fadeTo(target, duration = 300) {
                         else if (currentLang === 'ko') speech.lang = 'ko-KR';
                         else speech.lang = currentLang;
 
-                        fadeTo(0.08);
+                        fadeTo(0.2);
 
 			speech.onend = () => {
     			    fadeTo(0.3); // smooth restore
