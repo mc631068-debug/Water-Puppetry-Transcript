@@ -683,7 +683,12 @@ function fadeTo(target, duration = 300) {
 
                 if (lineEl && !lineEl.classList.contains('active')) {
                     document.querySelectorAll('.line, .stage-note').forEach(l => l.classList.remove('active'));
-                    lineEl.classList.add('active');
+                    const lineEl = document.getElementById('line-' + index);
+					lineEl.classList.add('active');
+					lineEl.scrollIntoView({
+    					behavior: 'smooth',
+    					block: 'center'
+					});
 
                     if (item.m && !spoken.has(index)) {
                         spoken.add(index);
