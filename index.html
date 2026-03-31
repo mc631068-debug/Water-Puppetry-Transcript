@@ -733,7 +733,7 @@ function fadeTo(target, duration = 300) {
                         else if (currentLang === 'ko') speech.lang = 'ko-KR';
                         else speech.lang = currentLang;
 
-                        fadeTo(0.1);
+                        fadeTo(0.08);
 
 			speech.onend = () => {
     			    fadeTo(0.3); // smooth restore
@@ -779,6 +779,13 @@ document.getElementById('img-modal').onclick = function () {
     this.style.display = 'none';
 };
 
+function duckMusic() {
+    puppetAudio.volume = 0.08; // lower during speech
+}
+
+function restoreMusic() {
+    puppetAudio.volume = 0.3; // normal
+}
 
 function endPerformance() {
 	puppetAudio.pause();
