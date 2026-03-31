@@ -630,6 +630,9 @@
         }
 
         function startLiveFeed() {
+			const BASE_VOLUME = 0.3;   // normal music
+			const LOW_VOLUME = 0.08;   // during speech
+			const BOOST_VOLUME = 0.4;  // after speech (slightly louder)
     document.getElementById('trans-init').style.display = 'none';
     document.getElementById('live-content').style.display = 'block';
 
@@ -703,10 +706,16 @@ function fadeTo(target, duration = 300) {
                         else if (currentLang === 'ko') speech.lang = 'ko-KR';
                         else speech.lang = currentLang;
 
-                        fadeTo(0.15);
+                        fadeTo(LOW_VOLUME); // lower during speech
 
-			speech.onend = () => {
-    			    fadeTo(0.3); // smooth restore
+						speech.onend = () => {
+    						fadeTo(BOOST_VOLUME, 400); // slight boost after
+
+    						// return to normal after short time
+    						setTimeout(() => {
+        						fadeTo(BASE_VOLUME, 600);
+    						}, 1200);
+						};
 			};
 
                         window.speechSynthesis.speak(speech);
